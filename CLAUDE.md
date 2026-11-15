@@ -9,6 +9,8 @@
 - **Next.js 16（App Router）+ TypeScript + Tailwind v4**，手機優先（版面最大寬度 `max-w-md`）
   - ⚠️ Next 16 和舊版差很多（例如 `params` 是 Promise、`cacheComponents` 開啟時用到 `useParams` 要包 `<Suspense>`）。
     寫之前先查 `node_modules/next/dist/docs/`。
+  - ⚠️ **離開的頁面會被保留**（React Activity，最多 3 頁）：表單內容、`saving` 之類的 state 回來時還在。
+    送出後一定要在 `finally` 解除 busy 狀態；需要全新表單時用 `key` 重設（見 `src/app/recipes/new/page.tsx`）。
 - **Supabase**：PostgreSQL 資料庫 + Realtime 即時同步 + Storage（酒譜照片）
   - 選它而不是 Firebase：Firebase Storage 新專案需要付費方案；Supabase 免費方案就夠。
 - **Vercel** 免費方案部署

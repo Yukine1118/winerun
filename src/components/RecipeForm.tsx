@@ -90,6 +90,8 @@ export function RecipeForm({
       onSaved(res.recipe);
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      // 一定要解除「儲存中」：Next.js 會保留離開的頁面，不解除的話下次回來按鈕會卡住
       setSaving(false);
     }
   }

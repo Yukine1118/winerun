@@ -25,7 +25,8 @@ function EditRecipe() {
       <PageHeader title="編輯酒譜" back={{ href: `/recipes/${id}`, label: "返回" }} />
       {status === "loading" && <p className="py-20 text-center text-zinc-400">載入中…</p>}
       {status !== "loading" && !recipe && <Card className="text-center text-zinc-400">找不到這份酒譜</Card>}
-      {recipe && <RecipeForm recipe={recipe} onSaved={() => router.replace(`/recipes/${id}`)} />}
+      {/* key 帶內容：酒譜被改過後再進來，表單會用最新內容重新開始 */}
+      {recipe && <RecipeForm key={JSON.stringify(recipe)} recipe={recipe} onSaved={() => router.replace(`/recipes/${id}`)} />}
     </>
   );
 }

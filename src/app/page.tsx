@@ -43,6 +43,8 @@ export default function Home() {
       router.push(`/room/${res.code}`);
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      // Next.js 會保留離開的頁面，不解除的話回首頁時按鈕會卡在「建立中…」
       setBusy(null);
     }
   }

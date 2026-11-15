@@ -27,8 +27,10 @@ function RecipeDetail() {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 讀取這支手機記住的房間
+    /* eslint-disable react-hooks/set-state-in-effect -- 每次回到這頁都重新讀取房間 */
     setRoom(lastRoom());
+    setAdded(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const header = <PageHeader title="酒譜" back={{ href: "/recipes", label: "酒譜" }} />;
