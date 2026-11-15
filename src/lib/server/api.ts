@@ -55,7 +55,8 @@ export function describeServerError(err: unknown): string {
   if (code === "42501") {
     return "資料庫權限不足：SUPABASE_SECRET_KEY 可能填成了 publishable key";
   }
-  return "伺服器發生錯誤，請再試一次";
+  // 其他錯誤：把資料庫回報的原因一起顯示，方便排查（訊息裡不含金鑰）
+  return `伺服器發生錯誤：${code} ${message}`.slice(0, 300);
 }
 
 export async function readJson(req: Request): Promise<Record<string, unknown>> {
