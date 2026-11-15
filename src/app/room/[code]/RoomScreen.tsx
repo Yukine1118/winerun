@@ -6,11 +6,11 @@ import { Button, Card } from "@/components/ui";
 import { useRoomRealtime } from "@/hooks/useRoomRealtime";
 import { clearSession, loadSession, type RoomSession } from "@/lib/session";
 import { JoinForm } from "./JoinForm";
-import { MemberList } from "./MemberList";
 import { ShareCode } from "./ShareCode";
+import { TeamsPanel } from "./TeamsPanel";
 
 export function RoomScreen({ code }: { code: string }) {
-  const { snapshot, status, error } = useRoomRealtime(code);
+  const { snapshot, status, error, reload } = useRoomRealtime(code);
   const [session, setSession] = useState<RoomSession | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
 
@@ -83,11 +83,14 @@ export function RoomScreen({ code }: { code: string }) {
         </Button>
       </Card>
 
-      <MemberList players={snapshot.players} meId={me.id} />
-
-      <Card className="text-center text-sm text-zinc-400">
-        {isHost ? "人到齊後就可以開始分組（階段 2 製作中）" : "等主持人開始分組…"}
-      </Card>
+      <TeamsPanel
+        code={code}
+        teams={snapshot.teams}
+        players={snapshot.players}
+        meId={me.id}
+        hostToken={isHost ? session?.hostToken : undefined}
+        onChanged={reload}
+      />
     </>
   );
 }
