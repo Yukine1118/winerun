@@ -56,6 +56,8 @@
 - 伺服器 API 可以直接連 Supabase 測（secret key 由代理注入，啟動時加 `NODE_USE_ENV_PROXY=1`）。
 - 瀏覽器端（畫面、Realtime）在雲端環境測不了，要請使用者在 Vercel 網址上用手機驗收。
 - `/api/health` 可以檢查部署環境的設定是否正確。
+- 改了 `globals.css` 之後 `next dev` 可能還用舊的快取（新的 class 沒生效）：先 `rm -rf .next` 再測，或用 `next build && next start` 驗證。
+- 不需要 Supabase 的畫面（拉霸機、表單版面）可以用 Playwright 模擬手機實際操作並截圖。
 
 ## 開發流程
 - 分階段開發，每階段完成要能實際操作，並說明本機執行方式與驗收清單。

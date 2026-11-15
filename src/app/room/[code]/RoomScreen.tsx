@@ -97,6 +97,9 @@ export function RoomScreen({ code }: { code: string }) {
         <Link href="/recipes" className="flex-1 rounded-xl bg-zinc-900 py-2 text-center text-zinc-300">
           📖 酒譜
         </Link>
+        <Link href="/slot" className="flex-1 rounded-xl bg-zinc-900 py-2 text-center text-zinc-300">
+          🎰 拉霸機
+        </Link>
       </nav>
 
       <RoomBody

@@ -108,6 +108,12 @@ export default function Home() {
         >
           📖 酒譜
         </Link>
+        <Link
+          href="/slot"
+          className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/80 py-4 text-center font-semibold"
+        >
+          🎰 拉霸機
+        </Link>
       </nav>
     </>
   );

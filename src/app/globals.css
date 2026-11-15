@@ -32,3 +32,22 @@ body {
     animation: none;
   }
 }
+
+/* 拉霸機轉輪：整條項目往上捲，最後停在抽中的那一格 */
+@keyframes reel-spin {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--end));
+  }
+}
+.reel-strip {
+  animation: reel-spin var(--dur) cubic-bezier(0.15, 0.6, 0.25, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-strip {
+    animation: none;
+    transform: translateY(var(--end));
+  }
+}
