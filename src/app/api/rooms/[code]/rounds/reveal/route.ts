@@ -2,26 +2,23 @@
 // 配對在這一刻才由伺服器產生並寫入，所以事前沒有人（包含主持人）能偷看。
 import { getAdminSupabase } from "@/lib/supabase/server";
 import { PairingError, generatePairing, validatePairing, type Pair } from "@/lib/pairing";
-import { ApiError, getCurrentRound, handle, readJson, requireHost } from "@/lib/server/api";
+import { ApiError, getCurrentRound, handle, requireHost } from "@/lib/server/api";
 
 export const POST = handle(
   async (req: Request, ctx: RouteContext<"/api/rooms/[code]/rounds/reveal">) => {
     const { code } = await ctx.params;
     const room = await requireHost(req, code);
-    const body = await readJson(req);
-    const allowRepeat = body.allowRepeat === true;
     const db = getAdminSupabase();
 
     const round = await getCurrentRound(room);
     if (!round) throw new ApiError(409, "還沒開始選酒");
     if (round.status === "revealed") throw new ApiError(409, "這一輪已經公布過了");
 
-    const [teamsRes, choicesRes, historyRes] = await Promise.all([
+    const [teamsRes, choicesRes] = await Promise.all([
       db.from("teams").select("id, name").eq("room_id", room.id).order("sort_order"),
       db.from("team_choices").select("team_id").eq("round_id", round.id),
-      db.from("pairings").select("from_team_id, to_team_id").eq("room_id", room.id),
     ]);
-    for (const r of [teamsRes, choicesRes, historyRes]) if (r.error) throw r.error;
+    for (const r of [teamsRes, choicesRes]) if (r.error) throw r.error;
     const teams = teamsRes.data!;
 
     const waiting = teams.filter((t) => !choicesRes.data!.some((c) => c.team_id === t.id));
@@ -30,19 +27,17 @@ export const POST = handle(
     }
 
     const teamIds = teams.map((t) => t.id as string);
-    const forbidden: Pair[] = allowRepeat
-      ? []
-      : historyRes.data!.map((p) => ({ from: p.from_team_id, to: p.to_team_id }));
 
+    // 每一輪都是獨立隨機：不看之前幾輪的結果，所以同樣的配對有可能再次出現
     let pairs: Pair[];
     try {
-      pairs = generatePairing(teamIds, { forbidden });
+      pairs = generatePairing(teamIds);
     } catch (err) {
       if (err instanceof PairingError) throw new ApiError(409, err.message, err.code);
       throw err;
     }
     // 雙重保險：寫入前再檢查一次規則
-    const problems = validatePairing(teamIds, pairs, forbidden);
+    const problems = validatePairing(teamIds, pairs);
     if (problems.length > 0) throw new Error(`配對結果不合法：${problems.join("；")}`);
 
     const { error: pairErr } = await db.from("pairings").insert(

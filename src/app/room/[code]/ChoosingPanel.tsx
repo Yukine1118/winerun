@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Button, Card, ErrorText, Input } from "@/components/ui";
 import type { RoomSnapshot } from "@/hooks/useRoomRealtime";
 import { useAction } from "@/hooks/useAction";
-import { ApiCallError, callApi } from "@/lib/apiClient";
+import { callApi } from "@/lib/apiClient";
 import type { Player, Round } from "@/lib/types";
 
 interface Props {
@@ -26,7 +26,7 @@ export function ChoosingPanel({ code, snapshot, round, me, hostToken, onChanged 
   const allDone = doneCount === teams.length;
 
   const [custom, setCustom] = useState("");
-  const { busy, error, run, setError } = useAction(onChanged);
+  const { busy, error, run } = useAction(onChanged);
   const base = `/api/rooms/${code}`;
 
   function choose(drinkName: string, recipeId: string | null = null) {
@@ -44,19 +44,8 @@ export function ChoosingPanel({ code, snapshot, round, me, hostToken, onChanged 
     callApi(`${base}/drinks`, { playerId: me.id, name }).then(onChanged, () => {});
   }
 
-  async function reveal(allowRepeat = false) {
-    setError(null);
-    try {
-      await callApi(`${base}/rounds/reveal`, { allowRepeat }, { hostToken });
-      onChanged();
-    } catch (err) {
-      // 不重複的配法用完了 → 問主持人要不要允許重複
-      if (err instanceof ApiCallError && err.code === "NO_SOLUTION" && !allowRepeat) {
-        if (confirm(`${err.message}。\n要允許和之前重複，繼續抽嗎？`)) await reveal(true);
-        return;
-      }
-      setError((err as Error).message);
-    }
+  function reveal() {
+    return run(() => callApi(`${base}/rounds/reveal`, {}, { hostToken }));
   }
 
   return (

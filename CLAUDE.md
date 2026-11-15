@@ -42,13 +42,13 @@
 ## 核心規則：配對演算法（`src/lib/pairing.ts`）
 - 每組的酒送給另一組喝：每組恰好送出一次、恰好收到一次、不能送給自己（無固定點的隨機排列）。
 - 1 組 → 無法配對；2 組 → 互換。
-- 多輪模式：同一對 (from → to) 不在不同輪重複出現；無解時要明確告知。
+- **每一輪都是獨立隨機**（使用者的決定）：不看之前幾輪的結果，同樣的配對可以再出現。
+  `generatePairing` 仍支援 `forbidden` 參數（有測試），但伺服器目前不使用。
 
 ## 房間流程（`rooms.status`）
 `lobby`（分組）→ 主持人「開始選酒」→ `choosing` → 主持人「公布結果」→ `revealed` → 「下一輪」回到 `choosing`，或「回到分組」回到 `lobby`。
 - 新增 / 刪除 / 隨機分組只能在 `lobby` 做（`requireLobby`）。
 - 配對在「公布」那一刻才由伺服器產生（`rounds/reveal`），寫入前用 `validatePairing` 再檢查一次。
-- 不重複的配法用完時 API 回傳 `code: "NO_SOLUTION"`，前端問主持人是否允許重複（`allowRepeat`）。
 
 ## 在 Claude 雲端環境測試的限制
 - 伺服器 API 可以直接連 Supabase 測（secret key 由代理注入，啟動時加 `NODE_USE_ENV_PROXY=1`）。
