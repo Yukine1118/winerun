@@ -75,7 +75,10 @@ export function useRoomRealtime(code: string) {
       setStatus("ready");
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      // Supabase 的錯誤是一般物件（不是 Error），要取出 message 才看得懂
+      const message =
+        err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
+      setError(message);
       setStatus((s) => (s === "loading" ? "error" : s));
     }
   }, [code]);

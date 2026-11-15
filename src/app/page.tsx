@@ -23,8 +23,9 @@ export default function Home() {
 
   // 記得上次用的暱稱，省得每次重打
   useEffect(() => {
+    // 如果使用者已經開始打字，就不要蓋掉
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 只在第一次載入時讀取 localStorage
-    setNickname(lastNickname());
+    setNickname((current) => current || lastNickname());
   }, []);
 
   async function createRoom() {
