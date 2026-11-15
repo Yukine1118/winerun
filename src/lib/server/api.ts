@@ -30,9 +30,32 @@ export function handle<Args extends unknown[]>(
         return Response.json({ error: err.message }, { status: err.status });
       }
       console.error(err);
-      return Response.json({ error: "伺服器發生錯誤，請再試一次" }, { status: 500 });
+      return Response.json({ error: describeServerError(err) }, { status: 500 });
     }
   };
+}
+
+/** 把常見的「設定錯誤」翻成看得懂的提示（不會洩漏任何金鑰內容） */
+export function describeServerError(err: unknown): string {
+  const e = (err && typeof err === "object" ? err : {}) as { message?: unknown; code?: unknown };
+  const message = String(e.message ?? err);
+  const code = String(e.code ?? "");
+  if (message.includes("缺少")) {
+    return `伺服器設定不完整：${message}（Vercel 要到 Settings → Environment Variables 設定，改完要 Redeploy）`;
+  }
+  if (/invalid api key|no api key|unauthorized|jwt/i.test(message)) {
+    return "Supabase 金鑰不正確：請檢查 SUPABASE_SECRET_KEY 是否貼了完整的 sb_secret_ 金鑰";
+  }
+  if (/fetch failed|ENOTFOUND|invalid url/i.test(message)) {
+    return "連不到 Supabase：請檢查 NEXT_PUBLIC_SUPABASE_URL 是否正確（https://xxxx.supabase.co，後面不要加其他路徑）";
+  }
+  if (code === "PGRST205" || code === "42P01") {
+    return "資料庫裡找不到資料表：請在 Supabase 的 SQL Editor 執行 supabase/migrations/001_init.sql";
+  }
+  if (code === "42501") {
+    return "資料庫權限不足：SUPABASE_SECRET_KEY 可能填成了 publishable key";
+  }
+  return "伺服器發生錯誤，請再試一次";
 }
 
 export async function readJson(req: Request): Promise<Record<string, unknown>> {

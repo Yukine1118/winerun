@@ -11,9 +11,14 @@ export function getAdminSupabase(): SupabaseClient {
   if (admin) return admin;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY;
+  const missing = [
+    !url && "NEXT_PUBLIC_SUPABASE_URL",
+    !key && "SUPABASE_SECRET_KEY",
+  ].filter(Boolean);
   if (!url || !key) {
-    throw new Error("缺少 NEXT_PUBLIC_SUPABASE_URL 或 SUPABASE_SECRET_KEY，請檢查 .env.local");
+    throw new Error(`缺少環境變數 ${missing.join("、")}`);
   }
-  admin = createClient(url, key, { auth: { persistSession: false } });
+  // 貼上時常會多帶空白或換行，順手去掉
+  admin = createClient(url.trim(), key.trim(), { auth: { persistSession: false } });
   return admin;
 }
