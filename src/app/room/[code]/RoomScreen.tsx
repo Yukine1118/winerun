@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, Card } from "@/components/ui";
 import { useRoomRealtime } from "@/hooks/useRoomRealtime";
-import { clearSession, loadSession, type RoomSession } from "@/lib/session";
+import { clearSession, loadSession, rememberRoom, type RoomSession } from "@/lib/session";
 import { JoinForm } from "./JoinForm";
 import { ShareCode } from "./ShareCode";
 import { TeamsPanel } from "./TeamsPanel";
@@ -24,7 +24,9 @@ export function RoomScreen({ code }: { code: string }) {
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- 讀取這支手機記住的身分 */
-    setSession(loadSession(code));
+    const saved = loadSession(code);
+    if (saved) rememberRoom(code);
+    setSession(saved);
     setSessionChecked(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [code]);
@@ -90,6 +92,12 @@ export function RoomScreen({ code }: { code: string }) {
           離開
         </Button>
       </Card>
+
+      <nav className="flex gap-2 text-sm">
+        <Link href="/recipes" className="flex-1 rounded-xl bg-zinc-900 py-2 text-center text-zinc-300">
+          📖 酒譜
+        </Link>
+      </nav>
 
       <RoomBody
         code={code}

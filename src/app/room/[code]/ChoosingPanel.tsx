@@ -104,13 +104,19 @@ export function ChoosingPanel({ code, snapshot, round, me, hostToken, onChanged 
             </ul>
           )}
 
+          <p className="text-xs text-zinc-500">
+            想不到喝什麼？到上面的「📖 酒譜」挑一款，按「加入本場酒單」就會出現在這裡。
+          </p>
+
           <form onSubmit={chooseCustom} className="flex gap-2">
+<div className="min-w-0 flex-1">
             <Input
               placeholder="自己輸入酒名"
               value={custom}
               maxLength={40}
               onChange={(e) => setCustom(e.target.value)}
             />
+            </div>
             <Button type="submit" variant="secondary" className="shrink-0" disabled={busy || !custom.trim()}>
               選這款
             </Button>

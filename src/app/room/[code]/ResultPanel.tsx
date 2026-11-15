@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button, Card, ErrorText } from "@/components/ui";
 import type { RoomSnapshot } from "@/hooks/useRoomRealtime";
 import { useAction } from "@/hooks/useAction";
@@ -66,6 +67,11 @@ export function ResultPanel({ code, snapshot, round, me, hostToken, onChanged }:
             <div className="text-sm text-zinc-400">你們這組要喝的是</div>
             <div className="my-1 text-3xl font-black text-amber-400">{incoming.drink}</div>
             <div className="text-sm text-zinc-400">（{incoming.from.name} 準備的）</div>
+            {incoming.recipeId && (
+              <Link href={`/recipes/${incoming.recipeId}`} className="mt-2 inline-block text-sm text-amber-300 underline">
+                📖 看酒譜
+              </Link>
+            )}
             <div className="mt-3 border-t border-zinc-800 pt-3 text-sm text-zinc-300">
               你們準備的「{outgoing.drink}」要送給 <b>{outgoing.to.name}</b>
             </div>

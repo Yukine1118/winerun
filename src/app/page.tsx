@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Card, ErrorText, Input } from "@/components/ui";
 import { callApi } from "@/lib/apiClient";
@@ -97,6 +98,15 @@ export default function Home() {
       </Card>
 
       <ErrorText>{error}</ErrorText>
+
+      <nav className="flex gap-2">
+        <Link
+          href="/recipes"
+          className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/80 py-4 text-center font-semibold"
+        >
+          📖 酒譜
+        </Link>
+      </nav>
     </>
   );
 }

@@ -10,6 +10,7 @@ export interface RoomSession {
 
 const key = (code: string) => `winerun:room:${code.toUpperCase()}`;
 const NICKNAME_KEY = "winerun:nickname";
+const LAST_ROOM_KEY = "winerun:lastRoom";
 
 function safeGet(k: string): string | null {
   try {
@@ -40,11 +41,25 @@ export function loadSession(code: string): RoomSession | null {
 export function saveSession(code: string, session: RoomSession) {
   safeSet(key(code), JSON.stringify(session));
   safeSet(NICKNAME_KEY, session.nickname);
+  rememberRoom(code);
+}
+
+/** 記住「最近待的房間」，讓酒譜、拉霸機頁面可以一鍵回房間、把酒加進酒單 */
+export function rememberRoom(code: string) {
+  safeSet(LAST_ROOM_KEY, code.toUpperCase());
+}
+
+export function lastRoom(): { code: string; session: RoomSession } | null {
+  const code = safeGet(LAST_ROOM_KEY);
+  if (!code) return null;
+  const session = loadSession(code);
+  return session ? { code, session } : null;
 }
 
 export function clearSession(code: string) {
   try {
     localStorage.removeItem(key(code));
+    if (safeGet(LAST_ROOM_KEY) === code.toUpperCase()) localStorage.removeItem(LAST_ROOM_KEY);
   } catch {
     /* ignore */
   }

@@ -5,6 +5,8 @@ export interface RoundResult {
   from: Team;
   to: Team;
   drink: string;
+  /** 這款酒有對應的酒譜時才有值 */
+  recipeId: string | null;
 }
 
 export function roundResults(
@@ -21,7 +23,12 @@ export function roundResults(
     const to = teamById.get(p.to_team_id);
     if (!from || !to) continue;
     const choice = choices.find((c) => c.round_id === round.id && c.team_id === from.id);
-    results.push({ from, to, drink: choice?.drink_name ?? "（沒有紀錄）" });
+    results.push({
+      from,
+      to,
+      drink: choice?.drink_name ?? "（沒有紀錄）",
+      recipeId: choice?.recipe_id ?? null,
+    });
   }
   return results.sort((a, b) => a.from.sort_order - b.from.sort_order);
 }
