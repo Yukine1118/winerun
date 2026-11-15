@@ -44,6 +44,17 @@
 - 1 組 → 無法配對；2 組 → 互換。
 - 多輪模式：同一對 (from → to) 不在不同輪重複出現；無解時要明確告知。
 
+## 房間流程（`rooms.status`）
+`lobby`（分組）→ 主持人「開始選酒」→ `choosing` → 主持人「公布結果」→ `revealed` → 「下一輪」回到 `choosing`，或「回到分組」回到 `lobby`。
+- 新增 / 刪除 / 隨機分組只能在 `lobby` 做（`requireLobby`）。
+- 配對在「公布」那一刻才由伺服器產生（`rounds/reveal`），寫入前用 `validatePairing` 再檢查一次。
+- 不重複的配法用完時 API 回傳 `code: "NO_SOLUTION"`，前端問主持人是否允許重複（`allowRepeat`）。
+
+## 在 Claude 雲端環境測試的限制
+- 伺服器 API 可以直接連 Supabase 測（secret key 由代理注入，啟動時加 `NODE_USE_ENV_PROXY=1`）。
+- 瀏覽器端（畫面、Realtime）在雲端環境測不了，要請使用者在 Vercel 網址上用手機驗收。
+- `/api/health` 可以檢查部署環境的設定是否正確。
+
 ## 開發流程
 - 分階段開發，每階段完成要能實際操作，並說明本機執行方式與驗收清單。
 - 每完成一個功能就 commit（英文、簡短）。

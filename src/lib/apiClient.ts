@@ -1,4 +1,13 @@
 // 瀏覽器呼叫我們自己 API 的小工具：失敗時丟出帶中文訊息的錯誤
+export class ApiCallError extends Error {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
+    super(message);
+  }
+}
+
 export async function callApi<T = unknown>(
   path: string,
   body: unknown = {},
@@ -14,7 +23,8 @@ export async function callApi<T = unknown>(
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error((data as { error?: string }).error ?? `發生錯誤（${res.status}）`);
+    const { error, code } = data as { error?: string; code?: string };
+    throw new ApiCallError(error ?? `發生錯誤（${res.status}）`, code);
   }
   return data as T;
 }

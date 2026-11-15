@@ -8,6 +8,14 @@ import { clearSession, loadSession, type RoomSession } from "@/lib/session";
 import { JoinForm } from "./JoinForm";
 import { ShareCode } from "./ShareCode";
 import { TeamsPanel } from "./TeamsPanel";
+import { ChoosingPanel } from "./ChoosingPanel";
+import { ResultPanel } from "./ResultPanel";
+import { PastRounds } from "./PastRounds";
+import { ErrorText } from "@/components/ui";
+import { useAction } from "@/hooks/useAction";
+import { callApi } from "@/lib/apiClient";
+import type { RoomSnapshot } from "@/hooks/useRoomRealtime";
+import type { Player } from "@/lib/types";
 
 export function RoomScreen({ code }: { code: string }) {
   const { snapshot, status, error, reload } = useRoomRealtime(code);
@@ -83,14 +91,71 @@ export function RoomScreen({ code }: { code: string }) {
         </Button>
       </Card>
 
+      <RoomBody
+        code={code}
+        snapshot={snapshot}
+        me={me}
+        hostToken={isHost ? session?.hostToken : undefined}
+        reload={reload}
+      />
+    </>
+  );
+}
+
+/** 依房間目前的狀態，顯示「分組」「選酒」或「結果」畫面 */
+function RoomBody({
+  code,
+  snapshot,
+  me,
+  hostToken,
+  reload,
+}: {
+  code: string;
+  snapshot: RoomSnapshot;
+  me: Player;
+  hostToken?: string;
+  reload: () => void;
+}) {
+  const { room } = snapshot;
+  const round = snapshot.rounds.find((r) => r.round_no === room.current_round);
+  const { busy, error, run } = useAction(reload);
+
+  if (room.status === "choosing" && round) {
+    return (
+      <ChoosingPanel code={code} snapshot={snapshot} round={round} me={me} hostToken={hostToken} onChanged={reload} />
+    );
+  }
+  if (room.status === "revealed" && round) {
+    return (
+      <ResultPanel code={code} snapshot={snapshot} round={round} me={me} hostToken={hostToken} onChanged={reload} />
+    );
+  }
+
+  const unassigned = snapshot.players.filter((p) => !p.team_id).length;
+  function startRound() {
+    if (unassigned > 0 && !confirm(`還有 ${unassigned} 人沒分組（會變成觀眾），確定開始嗎？`)) return;
+    run(() => callApi(`/api/rooms/${code}/rounds`, {}, { hostToken }));
+  }
+
+  return (
+    <>
       <TeamsPanel
         code={code}
         teams={snapshot.teams}
         players={snapshot.players}
         meId={me.id}
-        hostToken={isHost ? session?.hostToken : undefined}
+        hostToken={hostToken}
         onChanged={reload}
       />
+      {hostToken && snapshot.teams.length > 0 && (
+        <>
+          <ErrorText>{error}</ErrorText>
+          <Button disabled={busy} onClick={startRound}>
+            🍸 開始選酒（第 {room.current_round + 1} 輪）
+          </Button>
+        </>
+      )}
+      <PastRounds snapshot={snapshot} />
     </>
   );
 }

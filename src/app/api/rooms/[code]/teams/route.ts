@@ -1,13 +1,14 @@
 // POST /api/rooms/ABCD/teams：主持人新增一組
 import { getAdminSupabase } from "@/lib/supabase/server";
 import { MAX_TEAMS, defaultTeamName, normalizeTeamName } from "@/lib/grouping";
-import { ApiError, handle, readJson, requireHost } from "@/lib/server/api";
+import { ApiError, handle, readJson, requireHost, requireLobby } from "@/lib/server/api";
 
 
 
 export const POST = handle(async (req: Request, ctx: RouteContext<"/api/rooms/[code]/teams">) => {
   const { code } = await ctx.params;
   const room = await requireHost(req, code);
+  requireLobby(room);
   const body = await readJson(req);
   const db = getAdminSupabase();
 

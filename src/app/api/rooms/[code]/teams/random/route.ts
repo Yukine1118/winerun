@@ -1,12 +1,13 @@
 // POST /api/rooms/ABCD/teams/random：主持人一鍵隨機分組（會取代目前的分組）
 import { getAdminSupabase } from "@/lib/supabase/server";
 import { MAX_TEAMS, defaultTeamName, randomGroups } from "@/lib/grouping";
-import { ApiError, handle, readJson, requireHost } from "@/lib/server/api";
+import { ApiError, handle, readJson, requireHost, requireLobby } from "@/lib/server/api";
 
 export const POST = handle(
   async (req: Request, ctx: RouteContext<"/api/rooms/[code]/teams/random">) => {
     const { code } = await ctx.params;
     const room = await requireHost(req, code);
+    requireLobby(room);
     const body = await readJson(req);
     const teamCount = Number(body.teamCount);
     if (!Number.isInteger(teamCount) || teamCount < 2 || teamCount > MAX_TEAMS) {

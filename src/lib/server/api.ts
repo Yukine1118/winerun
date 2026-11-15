@@ -2,7 +2,7 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { getAdminSupabase } from "@/lib/supabase/server";
 import { normalizeRoomCode } from "@/lib/roomCode";
-import type { Room } from "@/lib/types";
+import type { Room, Round } from "@/lib/types";
 
 /** 房間代碼在這段時間內不會重複；查詢時也只找這段時間內建立的房間 */
 export const ROOM_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -12,6 +12,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** 給前端判斷用的錯誤代號（可省略） */
+    public code?: string,
   ) {
     super(message);
   }
@@ -27,7 +29,7 @@ export function handle<Args extends unknown[]>(
       return Response.json(data ?? { ok: true });
     } catch (err) {
       if (err instanceof ApiError) {
-        return Response.json({ error: err.message }, { status: err.status });
+        return Response.json({ error: err.message, code: err.code }, { status: err.status });
       }
       console.error(err);
       return Response.json({ error: describeServerError(err) }, { status: 500 });
@@ -124,4 +126,31 @@ export async function requirePlayer(roomId: string, playerId: unknown) {
   if (error) throw error;
   if (!data) throw new ApiError(403, "你不在這個房間裡，請重新加入");
   return data;
+}
+
+/** 取得房間「目前這一輪」；還沒開始任何一輪就回傳 null */
+export async function getCurrentRound(room: Room): Promise<Round | null> {
+  if (room.current_round < 1) return null;
+  const { data, error } = await getAdminSupabase()
+    .from("rounds")
+    .select("*")
+    .eq("room_id", room.id)
+    .eq("round_no", room.current_round)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Round) ?? null;
+}
+
+/** 調整組別（新增、刪除、重新分組）只能在「分組」畫面做，選酒開始後就鎖住 */
+export function requireLobby(room: Room) {
+  if (room.status !== "lobby") {
+    throw new ApiError(409, "選酒已經開始，要調整組別請先按「回到分組」");
+  }
+}
+
+/** 一般文字欄位：去頭尾空白，長度 1~max，不合格回傳 null */
+export function cleanText(input: unknown, max: number): string | null {
+  if (typeof input !== "string") return null;
+  const text = input.trim();
+  return text.length >= 1 && text.length <= max ? text : null;
 }
