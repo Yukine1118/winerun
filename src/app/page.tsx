@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { InstallHint } from "@/components/InstallHint";
 import { Button, Card, ErrorText, Input } from "@/components/ui";
 import { callApi } from "@/lib/apiClient";
 import { normalizeRoomCode } from "@/lib/roomCode";
@@ -115,6 +116,8 @@ export default function Home() {
           🎰 拉霸機
         </Link>
       </nav>
+
+      <InstallHint />
     </>
   );
 }

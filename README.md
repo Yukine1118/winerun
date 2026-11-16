@@ -1,28 +1,84 @@
 # 🍸🏃 酒精路跑
 
-和朋友一起玩的酒精路跑小幫手：房間即時同步、分組、選酒隨機配對、酒譜、拉霸機。
+和朋友一起玩的酒精路跑小幫手。手機開連結就能用，不用下載、不用登入。
 
-## 第一次設定
+- **房間**：主持人建立房間，朋友輸入 4 碼代碼加入，所有人畫面即時同步
+- **分組**：一鍵隨機分組，或手動調整
+- **選酒與配對**：每組選一款酒，公布時隨機決定「誰的酒給誰喝」（不會抽到自己的）
+- **酒譜**：大家一起累積的酒譜，可搜尋、可附照片
+- **拉霸機**：隨機抽一款酒，或隨機組合基酒 + 軟飲 + 加料
+
+---
+
+## 給朋友的使用說明（可以直接貼到群組）
+
+> 1. 用手機點開網址（從 LINE 點開的話，建議選「用預設瀏覽器開啟」）
+> 2. 輸入主持人給的 **4 碼房間代碼**，填暱稱，按加入
+> 3. 等主持人分組 → 和組員討論後選一款酒 → 等主持人公布結果
+> 4. 畫面會顯示「你們這組要喝的是 ___」
+>
+> 手機螢幕關掉或切到別的 App 沒關係，切回來會自動更新。
+> 不小心關掉網頁，再點同一個連結就會回到原本的身分。
+
+## 主持人流程
+
+1. 首頁輸入暱稱 →「建立房間」→ 按右上角「邀請」把連結丟到群組
+2. 人到齊後選組數 →「🎲 隨機分組」（可以再點名字手動調整、改組名）
+3.「🍸 開始選酒」→ 等每一組都顯示 ✓
+4.「🎉 公布結果」→ 所有人同時看到配對
+5.「下一輪」繼續玩，或「回到分組」調整組別
+
+> ⚠️ 主持人的身分存在**建立房間的那支手機**上。換手機、清除瀏覽器資料、或用無痕模式，都會失去主持人權限。
+> 活動中請用同一支手機、同一個瀏覽器。
+
+## 活動前檢查清單
+
+- [ ] **前一天**打開網站建一個測試房間。Supabase 免費專案超過 7 天沒人用會自動暫停；
+      如果打不開，到 [Supabase 後台](https://supabase.com/dashboard) 按 **Restore**（免費，約一兩分鐘）。
+- [ ] 打開 `你的網址/api/health`，確認每一行都是 ✅
+- [ ] 找兩三個朋友實際跑一輪：加入 → 分組 → 選酒 → 公布
+- [ ] 先把想喝的酒加進酒譜，當天可以直接從酒譜加入酒單
+- [ ] 確認活動地點手機收得到訊號（App 需要網路才能同步）
+- [ ] 主持人手機充飽電 🔋
+
+房間代碼的有效期是 7 天，活動當天再建立正式的房間即可。酒譜會永久保存。
+
+---
+
+## 開發
+
+技術：Next.js 16 + TypeScript + Tailwind、Supabase（資料庫／即時同步／照片）、Vercel（部署）。
+詳細的架構規則見 [`CLAUDE.md`](./CLAUDE.md)。
+
+### 第一次設定
 
 1. 到 [Supabase](https://supabase.com) 建立免費專案。
-2. 後台 → **SQL Editor** → New query → 貼上 `supabase/migrations/001_init.sql` 全部內容 → **Run**。
-3. 複製 `.env.example` 成 `.env.local`，填入專案網址、publishable key、secret key
-   （後台 → Project Settings → API Keys）。
-4. 安裝並啟動：
+2. 後台 → **SQL Editor** → 貼上 `supabase/migrations/001_init.sql` 全部內容 → **Run**。
+3. 設定三個環境變數（本機放 `.env.local`，範本是 `.env.example`；Vercel 放在
+   Settings → Environment Variables）：
+
+| 名稱 | 值 | Vercel 類型 |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://xxxx.supabase.co` | Config |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` | Config |
+| `SUPABASE_SECRET_KEY` | `sb_secret_…`（⚠️ 不可外流） | Secret |
+
+在 Vercel 改完環境變數後，要到 Deployments → ⋯ → **Redeploy** 才會生效。
+
+### 指令
 
 ```bash
 npm install
-npm run dev
 ```
 
-打開 http://localhost:3000 。
-
-## 用手機測試（同一個 Wi-Fi）
-
-`npm run dev` 啟動後，終端機會顯示 `Network: http://192.168.x.x:3000`，用手機瀏覽器開那個網址即可。
-
-## 測試
+```bash
+npm run dev
+```
 
 ```bash
 npm test
 ```
+
+### 部署
+
+推到 GitHub 後 Vercel 會自動部署。出問題時先看 `你的網址/api/health`。
